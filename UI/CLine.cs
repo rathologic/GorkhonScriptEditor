@@ -59,7 +59,7 @@ namespace GorkhonScriptEditor
 
             OpCode = "        " + instructionRef.OPCode.ToString("X2") + "00 | ";
             string operandString = BitConverter.ToString(instructionRef.binaryRepresentation.ToArray()).Replace('-', ' ');
-            if (instruction.OPCode == 84)
+            if (!instruction.isValid)
             {
                 OperandBrush = Brushes.Red;
                 Foreground = Brushes.Red;

@@ -11,6 +11,8 @@ namespace GorkhonScriptEditor
 
         public UInt32 ID { get; set; }
 
+        public bool isValid { get; set; } // False if instruction contains an error
+
         List<Object> Args { get; set; }
 
         public List<byte> binaryRepresentation { get; set; }

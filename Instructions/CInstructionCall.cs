@@ -24,6 +24,7 @@ namespace GorkhonScriptEditor.Instructions
         public List<byte> binaryRepresentation { get; set; }
         uint IInstruction.ByteOffset { get; set; }
         uint IInstruction.ID { get; set; }
+        public bool isValid { get; set; }
 
         bool IInstruction.ValidateOperands(byte[] operands, bool updateBinary)
         {

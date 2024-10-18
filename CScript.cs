@@ -195,7 +195,8 @@ namespace GorkhonScriptEditor
             binaryRepresentation.Add((byte)0);
             int binarySize;
             IInstruction newIns;
-            
+            bool validityFlag = true; // Whether new instruction contained an error when read
+
             switch (OPCode)
             {
                 // 0x00 Mov
@@ -279,6 +280,12 @@ namespace GorkhonScriptEditor
                         offset += 4;
                         Int32 stringOffset = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
                         args.Add(stringOffset);
+                        if (!listStringConstants.ContainsKey(stringOffset))
+                        {
+                            string errorMessage = "Invalid string name index " + stringOffset + " at instruction 0x" + insID.ToString("X");
+                            MessageBox.Show(errorMessage, "String target error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            validityFlag = false;
+                        }
                         offset += 4;
                         newIns = new CInstructionMovS(args, binaryRepresentation, GetStringConstantByOffset(stringOffset));
                         break;
@@ -588,8 +595,12 @@ namespace GorkhonScriptEditor
                         offset += 4;
                         string strConst;
                         strConst = GetStringConstantByOffset(dataOffset);
+                        if (!listStringConstants.ContainsKey(dataOffset)) {
+                            string errorMessage = "Invalid string name index " + dataOffset + " at instruction 0x" + insID.ToString("X");
+                            MessageBox.Show(errorMessage, "String target error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            validityFlag = false;
+                        }
                         newIns = new CInstructionPushS(args, binaryRepresentation, strConst);
-
                         break;
                     }
                 // 0x15 PushT
@@ -1831,20 +1842,28 @@ namespace GorkhonScriptEditor
                         args.Add(funcID);
                         offset += 4;
                         binarySize += 4;
-                        ListFunctions.ElementAt(funcID).Calls.Add(insID);
-                        for (int i = 0; i < ListFunctions.ElementAt(funcID).NumArgs; i++)
+                        try
                         {
-                            Int32 arg = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
-                            args.Add(arg);
-                            offset += 4;
-                            offset += 1;
-                            binarySize += 5;
+                            ListFunctions.ElementAt(funcID).Calls.Add(insID);
+                            for (int i = 0; i < ListFunctions.ElementAt(funcID).NumArgs; i++)
+                            {
+                                Int32 arg = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
+                                args.Add(arg);
+                                offset += 4;
+                                offset += 1;
+                                binarySize += 5;
+                            }
+                            for (int i = 0; i < binarySize; i++)
+                            {
+                                binaryRepresentation.Add(binaryData[startingOffset + i]);
+                            }
+                            args.Add(ListFunctions.ElementAt(funcID));
+                        } catch (System.ArgumentOutOfRangeException) {
+                            string errorMessage = "Invalid Func index " + funcID + " at instruction 0x" + insID.ToString("X");
+                            MessageBox.Show(errorMessage, "Invalid function index", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            validityFlag = false;
+                            throw new ArgumentException(errorMessage);
                         }
-                        for (int i = 0; i < binarySize; i++)
-                        {
-                            binaryRepresentation.Add(binaryData[startingOffset + i]);
-                        }
-                        args.Add(ListFunctions.ElementAt(funcID));
                         newIns = new CInstructionFunc(args, binaryRepresentation);
                         break;
                     }
@@ -1862,7 +1881,8 @@ namespace GorkhonScriptEditor
                         } catch (System.Collections.Generic.KeyNotFoundException) {
                             string errorMessage = "Invalid ObjFunc name index " + funcNameOffset + " at instruction 0x" + insID.ToString("X");
                             MessageBox.Show(errorMessage, "String target error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                            args.Add("!ERROR!");
+                            args.Add(GetStringConstantByOffset(funcNameOffset));
+                            validityFlag = false;
                         }
                         offset += 4;
                         Int32 repeats = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
@@ -1891,11 +1911,11 @@ namespace GorkhonScriptEditor
                         Int32 funcNameOffset = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
                         try {
                             args.Add(listStringConstants[funcNameOffset]);
-                        } catch (System.Collections.Generic.KeyNotFoundException)
-                        {
-                            string errorMessage = "Invalid ObjFunc name index: " + funcNameOffset + " at address ???";
-                            MessageBox.Show(errorMessage, "Critical error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            throw new ArgumentException(errorMessage);
+                        } catch (System.Collections.Generic.KeyNotFoundException) {
+                            string errorMessage = "Invalid TObjFunc name index " + funcNameOffset + " at instruction 0x" + insID.ToString("X");
+                            MessageBox.Show(errorMessage, "String target error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            args.Add(GetStringConstantByOffset(funcNameOffset));
+                            validityFlag = false;
                         }
                         offset += 4;
                         Int32 repeats = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
@@ -2037,6 +2057,7 @@ namespace GorkhonScriptEditor
 
             newIns.ByteOffset = byteOffset;
             newIns.ID = (uint)insID;
+            newIns.isValid = validityFlag;
 
             return newIns;
         }

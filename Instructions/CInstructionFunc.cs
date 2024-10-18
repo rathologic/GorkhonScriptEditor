@@ -30,6 +30,7 @@ namespace GorkhonScriptEditor.Instructions
         public string DisplayString { get; set; }
         public UInt16 OPCode { get; set; }
         public List<Object> Args { get; set; }
+        public bool isValid { get; set; }
 
         public List<byte> binaryRepresentation { get; set; }
         uint IInstruction.ByteOffset { get; set; }
