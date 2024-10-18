@@ -45,9 +45,10 @@ namespace GorkhonScriptEditor
             UpdateInstructionFromEditor();
         }
 
+        // Brushes bound in View\MainWindow.xaml manage column text colors
         public System.Windows.Media.Brush Foreground { get; set; }
-
         public System.Windows.Media.Brush OpCodeBrush { get; set; }
+        public System.Windows.Media.Brush OperandBrush { get; set; }
 
         public String InstructionComment { get; set; }
 
@@ -58,6 +59,15 @@ namespace GorkhonScriptEditor
 
             OpCode = "        " + instructionRef.OPCode.ToString("X2") + "00 | ";
             string operandString = BitConverter.ToString(instructionRef.binaryRepresentation.ToArray()).Replace('-', ' ');
+            if (instruction.OPCode == 84)
+            {
+                OperandBrush = Brushes.Red;
+                Foreground = Brushes.Red;
+            } else
+            {
+                OperandBrush = (SolidColorBrush)new BrushConverter().ConvertFrom("#FF005B99");
+                Foreground = Brushes.OliveDrab;
+            }
             Operands = operandString;
 
             InstructionComment = instructionRef.DisplayString;
@@ -66,7 +76,6 @@ namespace GorkhonScriptEditor
             InstructionName = InstructionComment.Split(" ")[0];
             InstructionComment = InstructionComment.Substring(InstructionComment.Split(" ")[0].Length + 1);
 
-            Foreground = Brushes.OliveDrab;
             OpCodeBrush = Brushes.Purple;
 
             if (instruction.OPCode == 0x4F)

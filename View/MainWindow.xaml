@@ -73,7 +73,7 @@
                 <DataTemplate>
                     <VirtualizingStackPanel Orientation="Horizontal" Margin="3" VirtualizationMode="Recycling">
                         <TextBlock Text="{Binding LineNumber}" Background="Transparent"/>
-                        <TextBox  Text="{Binding Operands, Mode=TwoWay}" Background="Transparent" IsReadOnly="False" Width="180"  TextWrapping="Wrap" Margin="15 0 15 0" Foreground="#FF005B99" SelectionBrush="Black" SelectionTextBrush="White" BorderBrush="Transparent"/>
+                        <TextBox  Text="{Binding Operands, Mode=TwoWay}" Background="Transparent" IsReadOnly="False" Width="180"  TextWrapping="Wrap" Margin="15 0 15 0" Foreground="{Binding OperandBrush}" SelectionBrush="Black" SelectionTextBrush="White" BorderBrush="Transparent"/>
                         <TextBlock Text="{Binding InstructionName}" Background="Transparent"  Width="140"  TextWrapping="Wrap" Margin="15 0 15 0"  Foreground="{Binding OpCodeBrush}"/>
                         <TextBlock Text="{Binding InstructionComment}" Background="Transparent" Width="280" TextWrapping="Wrap" Margin="10 0 0 0" Foreground="{Binding Foreground}"/>
                     </VirtualizingStackPanel>
