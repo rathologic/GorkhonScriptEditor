@@ -1857,7 +1857,13 @@ namespace GorkhonScriptEditor
                         args.Add(objectNumber);
                         offset += 4;
                         Int32 funcNameOffset = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
-                        args.Add(listStringConstants[funcNameOffset]);
+                        try { 
+                            args.Add(listStringConstants[funcNameOffset]);
+                        } catch (System.Collections.Generic.KeyNotFoundException) {
+                            string errorMessage = "Invalid ObjFunc name index " + funcNameOffset + " at instruction 0x" + insID.ToString("X");
+                            MessageBox.Show(errorMessage, "String target error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            args.Add("!ERROR!");
+                        }
                         offset += 4;
                         Int32 repeats = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
                         offset += 4;
@@ -1883,7 +1889,14 @@ namespace GorkhonScriptEditor
                         args.Add(objectNumber);
                         offset += 4;
                         Int32 funcNameOffset = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
-                        args.Add(listStringConstants[funcNameOffset]);
+                        try {
+                            args.Add(listStringConstants[funcNameOffset]);
+                        } catch (System.Collections.Generic.KeyNotFoundException)
+                        {
+                            string errorMessage = "Invalid ObjFunc name index: " + funcNameOffset + " at address ???";
+                            MessageBox.Show(errorMessage, "Critical error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            throw new ArgumentException(errorMessage);
+                        }
                         offset += 4;
                         Int32 repeats = System.BitConverter.ToInt32(binaryData.AsSpan<byte>(offset, 4));
                         offset += 4;
